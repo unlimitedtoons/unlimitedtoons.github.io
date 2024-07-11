@@ -116,13 +116,15 @@
                     let programmeList = '';
 
                     for (let i = 0; i < programmes.length; i++) {
-                        const start = programmes[i].getAttribute('start');
-                        const stop = programmes[i].getAttribute('stop');
+                        const start = programmes[i].getAttribute('air_time_start');
+                        const stop = programmes[i].getAttribute('air_time_stop');
                         const title = programmes[i].getElementsByTagName('title')[0].textContent;
+                        const eptitle = programmes[i].getElementsByTagName('sub-title')[0].textContent;
                         const desc = programmes[i].getElementsByTagName('desc_short')[0].textContent;
                         
                         programmeList += `
-                            <strong>${title}</strong> (${formatDate(start)} - ${formatDate(stop)})<br>
+                            ${formatDate(start)} <strong>${title}</strong><br>
+                            ${eptitle}<br>
                             <em>${desc}</em><br><br>
                         `;
                     }
