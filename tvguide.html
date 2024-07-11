@@ -38,18 +38,22 @@
     </table>
     
     <script>
-        const baseURL = 'https://example.com/xmltv/';  // Cseréld le a saját URL-edre
-        const files = ['day1.xml', 'day2.xml', 'day3.xml', 'day4.xml', 'day5.xml', 'day6.xml', 'day7.xml'];
+	const files = ['20240701.xml', './20240702.xml', '20240703.xml', '20240704.xml', '20240705.xml', '20240706.xml', '20240707.xml'];
         const daysOfWeek = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
         const tvGuideTable = document.getElementById('tv-guide').getElementsByTagName('tbody')[0];
 
         function formatDate(dateStr) {
-            const date = new Date(dateStr.slice(0, 4) + '-' + dateStr.slice(4, 6) + '-' + dateStr.slice(6, 8) + 'T' + dateStr.slice(8, 10) + ':' + dateStr.slice(10, 12) + ':' + dateStr.slice(12, 14) + 'Z');
-            return date.toLocaleString('hu-HU', { timeZone: 'UTC' });
+            const year = dateStr.slice(0, 4);
+            const month = dateStr.slice(4, 6);
+            const day = dateStr.slice(6, 8);
+            const hour = dateStr.slice(8, 10);
+            const minute = dateStr.slice(10, 12);
+            const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:00Z`;
+            return new Date(formattedDate).toLocaleString('hu-HU', { timeZone: 'UTC' });
         }
 
         function fetchXML(file, dayName) {
-            return fetch(baseURL + file)
+            return fetch(file)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
