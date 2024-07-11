@@ -38,14 +38,24 @@
     </table>
     
     <script>
-        const baseURL = 'https://epg.vimn.com/nickelodeon_global_commercial/xmltvlegal/eng/';  // Az URL, ahol az XML fájlok találhatók
-        const files = ['20240701.xml', '20240702.xml', '20240703.xml', '20240704.xml', '20240705.xml', '20240706.xml', '20240707.xml'];
+        const baseURL = 'https://example.com/xmltv/';  // Cseréld le a saját URL-edre
+        const files = ['day1.xml', 'day2.xml', 'day3.xml', 'day4.xml', 'day5.xml', 'day6.xml', 'day7.xml'];
         const daysOfWeek = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
         const tvGuideTable = document.getElementById('tv-guide').getElementsByTagName('tbody')[0];
 
-        files.forEach((file, index) => {
-            fetch(baseURL + file)
-                .then(response => response.text())
+        function formatDate(dateStr) {
+            const date = new Date(dateStr.slice(0, 4) + '-' + dateStr.slice(4, 6) + '-' + dateStr.slice(6, 8) + 'T' + dateStr.slice(8, 10) + ':' + dateStr.slice(10, 12) + ':' + dateStr.slice(12, 14) + 'Z');
+            return date.toLocaleString('hu-HU', { timeZone: 'UTC' });
+        }
+
+        function fetchXML(file, dayName) {
+            return fetch(baseURL + file)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
                 .then(data => {
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(data, "text/xml");
@@ -53,7 +63,7 @@
                     const dayRow = document.createElement('tr');
                     
                     const dayCell = document.createElement('td');
-                    dayCell.textContent = daysOfWeek[index];
+                    dayCell.textContent = dayName;
                     dayRow.appendChild(dayCell);
                     
                     const programmeCell = document.createElement('td');
@@ -63,10 +73,10 @@
                         const start = programmes[i].getAttribute('start');
                         const stop = programmes[i].getAttribute('stop');
                         const title = programmes[i].getElementsByTagName('title')[0].textContent;
-                        const desc = programmes[i].getElementsByTagName('desc_short')[0].textContent;
+                        const desc = programmes[i].getElementsByTagName('desc')[0].textContent;
                         
                         programmeList += `
-                            <strong>${title}</strong> (${start} - ${stop})<br>
+                            <strong>${title}</strong> (${formatDate(start)} - ${formatDate(stop)})<br>
                             <em>${desc}</em><br><br>
                         `;
                     }
@@ -76,6 +86,10 @@
                     tvGuideTable.appendChild(dayRow);
                 })
                 .catch(error => console.error('Error:', error));
+        }
+
+        files.forEach((file, index) => {
+            fetchXML(file, daysOfWeek[index]);
         });
     </script>
 </body>
