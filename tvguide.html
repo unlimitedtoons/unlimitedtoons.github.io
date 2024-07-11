@@ -132,10 +132,11 @@
                         const episode = programmes[i].getElementsByTagName('episode-num')[0].textContent;
                         
                         programmeList += `
-                            ${formatDate(start)} <strong>${title}</strong><br>
+                            ${formatDate(start)}<br>
+                            <strong>${title}</strong><br>
                             ${season}/${episode}<br>
                             ${eptitle}<br>
-                            <em>${desc}</em><br><br>
+                            //<em>${desc}</em><br><br>
                         `;
                     }
                    
