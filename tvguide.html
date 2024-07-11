@@ -121,9 +121,12 @@
                         const title = programmes[i].getElementsByTagName('title')[0].textContent;
                         const eptitle = programmes[i].getElementsByTagName('sub-title')[0].textContent;
                         const desc = programmes[i].getElementsByTagName('desc_short')[0].textContent;
+                        const season = programmes[i].getElementsByTagName('season-num')[0].textContent;
+                        const episode = programmes[i].getElementsByTagName('episode-num')[0].textContent;
                         
                         programmeList += `
                             ${formatDate(start)} <strong>${title}</strong><br>
+                            ${season}/${episode}<br>
                             ${eptitle}<br>
                             <em>${desc}</em><br><br>
                         `;
