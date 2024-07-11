@@ -93,7 +93,7 @@
             for (let i = 0; i < 7; i++) {
                 const date = new Date(monday);
                 date.setDate(monday.getDate() + i);
-                const file = 'xml/' + getFileName(date);
+                const file = getFileName(date);
 
                 const dayCell = document.createElement('th');
                 dayCell.textContent = daysOfWeek[i];
