@@ -119,7 +119,7 @@
                         const start = programmes[i].getAttribute('start');
                         const stop = programmes[i].getAttribute('stop');
                         const title = programmes[i].getElementsByTagName('title')[0].textContent;
-                        const desc = programmes[i].getElementsByTagName('desc')[0].textContent;
+                        const desc = programmes[i].getElementsByTagName('desc_short')[0].textContent;
                         
                         programmeList += `
                             <strong>${title}</strong> (${formatDate(start)} - ${formatDate(stop)})<br>
