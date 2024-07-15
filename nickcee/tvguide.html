@@ -17,30 +17,46 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            vertical-align: top;
         }
         th {
             background-color: #f2f2f2;
+        }
+        .controls {
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <h1>TV Műsorújság - Heti Műsor</h1>
+    
+    <div class="controls">
+        <label for="year">Év: </label>
+        <input type="number" id="year" value="2024" min="2020" max="2030">
+        
+        <label for="week">Hét: </label>
+        <input type="number" id="week" value="27" min="1" max="52">
+        
+        <button onclick="loadSchedule()">Műsor betöltése</button>
+    </div>
+    
     <table id="tv-guide">
         <thead>
             <tr>
-                <th>Nap</th>
-                <th>Programok</th>
+                <!-- A napok ide kerülnek beillesztésre -->
             </tr>
         </thead>
         <tbody>
-            <!-- A programok ide kerülnek beillesztésre -->
+            <tr>
+                <!-- A programok ide kerülnek beillesztésre -->
+            </tr>
         </tbody>
     </table>
     
     <script>
-	const files = ['20240701.xml', './20240702.xml', '20240703.xml', '20240704.xml', '20240705.xml', '20240706.xml', '20240707.xml'];
         const daysOfWeek = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
-        const tvGuideTable = document.getElementById('tv-guide').getElementsByTagName('tbody')[0];
+        const tvGuideTableHead = document.getElementById('tv-guide').getElementsByTagName('thead')[0].rows[0];
+        const tvGuideTableBody = document.getElementById('tv-guide').getElementsByTagName('tbody')[0].rows[0];
 
         function formatDate(dateStr) {
             const year = dateStr.slice(0, 4);
@@ -52,8 +68,47 @@
             return new Date(formattedDate).toLocaleString('hu-HU', { timeZone: 'UTC' });
         }
 
-        function fetchXML(file, dayName) {
-            return fetch(file)
+        function getMonday(year, week) {
+            const jan1 = new Date(year, 0, 1);
+            const days = (week - 1) * 7;
+            const dayOffset = (jan1.getDay() <= 4 ? jan1.getDay() - 1 : jan1.getDay() + 6);
+            return new Date(year, 0, 1 + days - dayOffset);
+        }
+
+        function getFileName(date) {
+            const year = date.getFullYear();
+            const month = ('0' + (date.getMonth() + 1)).slice(-2);
+            const day = ('0' + date.getDate()).slice(-2);
+            return `${year}${month}${day}.xml`;
+        }
+
+        function loadSchedule() {
+            const year = document.getElementById('year').value;
+            const week = document.getElementById('week').value;
+            const monday = getMonday(year, week);
+
+            tvGuideTableHead.innerHTML = '';
+            tvGuideTableBody.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                const file = getFileName(date);
+
+                const dayCell = document.createElement('th');
+                dayCell.textContent = daysOfWeek[i];
+                tvGuideTableHead.appendChild(dayCell);
+
+                const programmeCell = document.createElement('td');
+                programmeCell.id = `day${i}`;
+                tvGuideTableBody.appendChild(programmeCell);
+
+                fetchXML(file, `day${i}`);
+            }
+        }
+
+        function fetchXML(file, dayId) {
+            fetch(file)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -64,37 +119,31 @@
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(data, "text/xml");
                     const programmes = xmlDoc.getElementsByTagName('programme');
-                    const dayRow = document.createElement('tr');
-                    
-                    const dayCell = document.createElement('td');
-                    dayCell.textContent = dayName;
-                    dayRow.appendChild(dayCell);
-                    
-                    const programmeCell = document.createElement('td');
+                    const programmeCell = document.getElementById(dayId);
                     let programmeList = '';
 
                     for (let i = 0; i < programmes.length; i++) {
-                        const start = programmes[i].getAttribute('start');
-                        const stop = programmes[i].getAttribute('stop');
+                        const start = programmes[i].getAttribute('air_time_start');
+                        const stop = programmes[i].getAttribute('air_time_stop');
                         const title = programmes[i].getElementsByTagName('title')[0].textContent;
-                        const desc = programmes[i].getElementsByTagName('desc')[0].textContent;
+                        const eptitle = programmes[i].getElementsByTagName('sub-title')[0].textContent;
+                        const desc = programmes[i].getElementsByTagName('desc_short')[0].textContent;
+                        const season = programmes[i].getElementsByTagName('season-num')[0].textContent;
+                        const episode = programmes[i].getElementsByTagName('episode-num')[0].textContent;
                         
                         programmeList += `
-                            <strong>${title}</strong> (${formatDate(start)} - ${formatDate(stop)})<br>
-                            <em>${desc}</em><br><br>
+                            ${formatDate(start)}<br>
+                            <strong>${title}</strong><br>
+                            ${season}/${episode}<br>
+                            ${eptitle}<br><br>
                         `;
                     }
-                    
+                   
                     programmeCell.innerHTML = programmeList;
-                    dayRow.appendChild(programmeCell);
-                    tvGuideTable.appendChild(dayRow);
                 })
                 .catch(error => console.error('Error:', error));
         }
 
-        files.forEach((file, index) => {
-            fetchXML(file, daysOfWeek[index]);
-        });
     </script>
 </body>
 </html>
