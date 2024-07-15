@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Műsorújság - Heti Műsor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>TV Műsorújság - Heti Műsor</h1>
+    <table id="tv-guide">
+        <thead>
+            <tr>
+                <th>Nap</th>
+                <th>Programok</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- A programok ide kerülnek beillesztésre -->
+        </tbody>
+    </table>
+    
+    <script>
+	const files = ['20240701.xml', './20240702.xml', '20240703.xml', '20240704.xml', '20240705.xml', '20240706.xml', '20240707.xml'];
+        const daysOfWeek = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
+        const tvGuideTable = document.getElementById('tv-guide').getElementsByTagName('tbody')[0];
+
+        function formatDate(dateStr) {
+            const year = dateStr.slice(0, 4);
+            const month = dateStr.slice(4, 6);
+            const day = dateStr.slice(6, 8);
+            const hour = dateStr.slice(8, 10);
+            const minute = dateStr.slice(10, 12);
+            const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:00Z`;
+            return new Date(formattedDate).toLocaleString('hu-HU', { timeZone: 'UTC' });
+        }
+
+        function fetchXML(file, dayName) {
+            return fetch(file)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(data, "text/xml");
+                    const programmes = xmlDoc.getElementsByTagName('programme');
+                    const dayRow = document.createElement('tr');
+                    
+                    const dayCell = document.createElement('td');
+                    dayCell.textContent = dayName;
+                    dayRow.appendChild(dayCell);
+                    
+                    const programmeCell = document.createElement('td');
+                    let programmeList = '';
+
+                    for (let i = 0; i < programmes.length; i++) {
+                        const start = programmes[i].getAttribute('start');
+                        const stop = programmes[i].getAttribute('stop');
+                        const title = programmes[i].getElementsByTagName('title')[0].textContent;
+                        const desc = programmes[i].getElementsByTagName('desc')[0].textContent;
+                        
+                        programmeList += `
+                            <strong>${title}</strong> (${formatDate(start)} - ${formatDate(stop)})<br>
+                            <em>${desc}</em><br><br>
+                        `;
+                    }
+                    
+                    programmeCell.innerHTML = programmeList;
+                    dayRow.appendChild(programmeCell);
+                    tvGuideTable.appendChild(dayRow);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        files.forEach((file, index) => {
+            fetchXML(file, daysOfWeek[index]);
+        });
+    </script>
+</body>
+</html>
